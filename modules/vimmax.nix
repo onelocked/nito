@@ -11,12 +11,11 @@
       nixvim = "gh:nix-community/nixvim";
     };
     perSystem =
-      { system, pkgs, ... }:
+      { pkgs, ... }:
       {
         packages = lib.genAttrs [ "light" "dark" ] (
           theme:
           (inputs.nixvim.lib.evalNixvim {
-            inherit system;
             extraSpecialArgs = {
               inherit inputs;
               inherit (inputs.nixvim.lib.nixvim) mkRaw;
