@@ -1,4 +1,9 @@
 {
+  "$declared": {
+    "nixpkgs": "github:nixos/nixpkgs/nixos-unstable",
+    "nixvim": "github:nix-community/nixvim",
+    "tack": "github:manic-systems/tack"
+  },
   "flake-parts": {
     "type": "github",
     "owner": "hercules-ci",
@@ -11,17 +16,17 @@
     "type": "github",
     "owner": "nixos",
     "repo": "nixpkgs",
-    "rev": "eaad089433ca2bb662274377d33df3d0e51ef28b",
-    "narHash": "sha256-H6GwaZzZf+4npqv0tph94w9tZddSjFjmQrVsW0z78uk=",
-    "lastModified": 1789149629
+    "rev": "c59305bab2065cfecc4944690d9eedbb56f3a9fa",
+    "narHash": "sha256-69xHQhAeMAD2wDXO7T2pcOZIF9Sga2W+JkmY2a11Ops=",
+    "lastModified": 1790822859
   },
   "nixvim": {
     "type": "github",
     "owner": "nix-community",
     "repo": "nixvim",
-    "rev": "31e5c6a0937e2554aa5279719ff794655bfb0365",
-    "narHash": "sha256-79l448oCbWZAuqewBd7hWby4+PLjI1Bnyrb/py8C2HA=",
-    "lastModified": 1789311313
+    "rev": "1cdfef1a6eb583d65b606b04fc97687491479d62",
+    "narHash": "sha256-EeMn6SmrBe4gnxaMyb3NZYMXG8FPF9PY0OCcbPDFFNI=",
+    "lastModified": 1790928658
   },
   "systems": {
     "type": "github",
@@ -35,8 +40,8 @@
     "type": "github",
     "owner": "manic-systems",
     "repo": "tack",
-    "rev": "d9c0516ff654c8a48dd4294dd183db51154ffad2",
-    "narHash": "sha256-GxJX6df+SqpZv3fkH+5oLQOVT/wI5CovnMaGGhtpvT0=",
-    "lastModified": 1789107241
+    "rev": "4aaed84df55c1f116ccd81d7bc0fb818a068955f",
+    "narHash": "sha256-5fc6+wvlE5yUPkrbgi9xSWsaVRA54qLuMot4sCoLm2E=",
+    "lastModified": 1790920390
   }
 }
