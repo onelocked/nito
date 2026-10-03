@@ -44,7 +44,7 @@
             };
             indicator_selected = {
               bg = "NONE";
-              fg = config.vimmax.${config.vimmax.theme}.base08;
+              fg = config.nito.${config.nito.theme}.base08;
             };
             indicator_visible = {
               bg = "NONE";

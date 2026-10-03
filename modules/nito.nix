@@ -26,7 +26,7 @@
               visual
               {
                 nixpkgs = { inherit pkgs; };
-                vimmax = { inherit theme; };
+                nito = { inherit theme; };
               }
             ];
           }).config.build.package

@@ -2,7 +2,7 @@
   neovim.visual =
     { lib, config, ... }:
     let
-      c = config.vimmax.${config.vimmax.theme};
+      c = config.nito.${config.nito.theme};
     in
     {
       config = {
@@ -313,7 +313,7 @@
 
         '';
       };
-      options.vimmax = {
+      options.nito = {
         theme = lib.mkOption {
           type = lib.types.str;
           default = "dark";

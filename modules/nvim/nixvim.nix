@@ -126,7 +126,7 @@
           vim.opt.whichwrap:append("<>[]hl")
           vim.opt.listchars:append("space:·")
           vim.api.nvim_set_hl(0, "Whitespace", { fg = "${
-            if config.vimmax.theme == "light" then "#aaaaaa" else "#434343"
+            if config.nito.theme == "light" then "#aaaaaa" else "#434343"
           }" })
 
           -- below part set's the Diagnostic icons/colors

@@ -23,7 +23,7 @@
               {
                 section = "terminal",
                 cmd = "${chafa} ${
-                  if config.vimmax.theme == "dark" then ./aemeath.jpg else retro-image
+                  if config.nito.theme == "dark" then ./aemeath.jpg else retro-image
                 } --format symbols --symbols vhalf --size 60x17; sleep .1",
                 padding = 2,
               },

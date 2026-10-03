@@ -2,7 +2,7 @@
   neovim.visual =
     { pkgs, config, ... }:
     let
-      c = config.vimmax.${config.vimmax.theme};
+      c = config.nito.${config.nito.theme};
     in
     {
       extraPlugins = [ pkgs.vimPlugins.lualine-nvim ];
@@ -26,7 +26,7 @@
           local custom_theme = {
             normal = {
               a = { fg = "${c.base01}", bg = "${
-                if config.vimmax.theme == "dark" then c.base0F else c.base0D
+                if config.nito.theme == "dark" then c.base0F else c.base0D
               }", gui = "bold" },
               b = { fg = "${c.base05}", bg = "${c.base02}" },
               c = { fg = "${c.base05}", bg = "${c.base00}" },
