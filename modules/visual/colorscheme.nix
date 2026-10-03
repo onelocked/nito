@@ -37,11 +37,11 @@
             fn                   = "${c.base12}",
             type                 = "${c.base14}",
             constant             = "${c.base09}",
-            number               = "${c.base16}",
+            number               = "${c.base13}",
             operator             = "${c.base10}",
             parameter            = "${c.base0E}",
             builtin              = "${c.base0C}",
-            special              = "${c.base0F}",
+            special              = "${c.base11}",
             variable             = "${c.base0D}",
             float_bg             = "${c.base00}",
             float_border         = "${c.base17}",
@@ -386,6 +386,42 @@
             base15 = "#7cb8d4";
             base16 = "#f2b8a0";
             base17 = "#7d75c0";
+          };
+        };
+        monochrome = lib.mkOption {
+          type = lib.types.attrsOf lib.types.str;
+          default = {
+            # Backgrounds
+            base00 = "#131313";
+            base01 = "#221c2c";
+            base02 = "#2a2a2f";
+            base03 = "#6a6a72";
+
+            # Foregrounds
+            base04 = "#8c92aa";
+            base05 = "#cfd3e7";
+            base06 = "#e4e8f5";
+            base07 = "#f0f2fa";
+
+            # Accents
+            base08 = "#ff7a6b";
+            base09 = "#f2b8a0";
+            base0A = "#f6d88a";
+            base0B = "#b8db8c";
+            base0C = "#7cb8d4";
+            base0D = "#c5c0ff";
+            base0E = "#d4a8c0";
+            base0F = "#7d75c0";
+
+            # Extended
+            base10 = "#8fd4b5";
+            base11 = "#c8b0e8";
+            base12 = "#a8c8f0";
+            base13 = "#e0a878";
+            base14 = "#f6d88a";
+            base15 = "#7cb8d4";
+            base16 = "#6e6e76";
+            base17 = "#6e6e76";
           };
         };
       };

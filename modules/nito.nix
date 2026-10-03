@@ -13,7 +13,7 @@
     perSystem =
       { pkgs, ... }:
       {
-        packages = lib.genAttrs [ "light" "dark" ] (
+        packages = lib.genAttrs [ "light" "dark" "monochrome" ] (
           theme:
           (inputs.nixvim.lib.evalNixvim {
             extraSpecialArgs = {

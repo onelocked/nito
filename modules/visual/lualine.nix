@@ -26,7 +26,7 @@
           local custom_theme = {
             normal = {
               a = { fg = "${c.base01}", bg = "${
-                if config.nito.theme == "dark" then c.base0F else c.base0D
+                if config.nito.theme == "light" then c.base0D else c.base17
               }", gui = "bold" },
               b = { fg = "${c.base05}", bg = "${c.base02}" },
               c = { fg = "${c.base05}", bg = "${c.base00}" },
