@@ -6,7 +6,20 @@
 
       extraConfigLua = # lua
         ''
-          vim.g.lazygit_floating_window_border_chars = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' }
+          _G.LazygitEdit = function(path, line)
+            vim.defer_fn(function()
+              local pos = line > 0 and { line, 0 } or nil
+              if _G.focus_if_open_elsewhere(path, pos) then
+                return
+              end
+              vim.cmd("edit " .. vim.fn.fnameescape(path))
+              if pos then
+                pcall(vim.api.nvim_win_set_cursor, 0, pos)
+                vim.cmd("normal! zz")
+              end
+            end, 100)
+            return 0
+          end
         '';
 
       plugins.lz-n.plugins = [
@@ -44,7 +57,7 @@
         {
           mode = "n";
           key = "<leader>gl";
-          action = "<cmd>lua Snacks.lazygit.log_file()<cr>";
+          action = "<cmd>LazyGitFilterCurrentFile<cr>";
           options = {
             desc = "Lazygit Current File History";
             silent = true;
