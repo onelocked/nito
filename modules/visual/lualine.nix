@@ -22,6 +22,7 @@
             end
             return symbols
           end
+          symbols = get_symbols()
 
           local custom_theme = {
             normal = {
@@ -115,7 +116,7 @@
                 {
                   symbols and symbols.get,
                   cond = function()
-                    return vim.b.trouble_lualine ~= false and symbols.has()
+                    return symbols ~= nil and vim.b.trouble_lualine ~= false and symbols.has()
                   end,
                 },
               },
