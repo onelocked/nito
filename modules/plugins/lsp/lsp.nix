@@ -55,9 +55,9 @@
     };
 
     diagnostic.settings = {
-      virtual_text = true;
+      virtual_text = false;
       underline = true;
-      signs = true;
+      signs = false;
       severity_sort = false;
       float = {
         border = "rounded";

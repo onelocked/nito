@@ -128,19 +128,6 @@
           vim.api.nvim_set_hl(0, "Whitespace", { fg = "${
             if config.nito.theme == "light" then "#aaaaaa" else "#434343"
           }" })
-
-          -- below part set's the Diagnostic icons/colors
-           local signs = {
-             Hint = "",
-             Info = "",
-             Warn = "",
-             Error = "",
-           }
-
-          for type, icon in pairs(signs) do
-            local hl = "DiagnosticSign" .. type
-            vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-          end
         '';
     };
 }
