@@ -37,56 +37,6 @@
         loaded_spellfile_plugin = 1;
       };
 
-      opts = {
-
-        clipboard = "unnamedplus";
-        cursorline = true;
-        cursorlineopt = "number";
-
-        pumblend = 0;
-        pumheight = 10;
-
-        expandtab = true;
-        shiftwidth = 2;
-        smartindent = true;
-        tabstop = 2;
-        softtabstop = 2;
-
-        ignorecase = true;
-        smartcase = true;
-        mouse = "";
-        cmdheight = 0;
-
-        number = true;
-        relativenumber = true;
-        numberwidth = 2;
-        ruler = false;
-
-        signcolumn = "yes";
-        splitbelow = true;
-        splitright = true;
-        splitkeep = "screen";
-        termguicolors = true;
-
-        conceallevel = 2;
-
-        undofile = true;
-
-        wrap = false;
-
-        virtualedit = "block";
-        winminwidth = 5;
-        fileencoding = "utf-8";
-        list = true;
-        smoothscroll = true;
-        autoread = true;
-        fillchars = {
-          eob = " ";
-        };
-
-        updatetime = 500;
-      };
-
       autoCmd = [
         {
           desc = "Highlight on yank";
