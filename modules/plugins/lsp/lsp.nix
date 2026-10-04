@@ -2,28 +2,6 @@
   neovim.mods = {
 
     plugins = {
-      mini = {
-        enable = true;
-        modules.comment = {
-          mappings = {
-            comment = "<leader>/";
-            comment_line = "<leader>/";
-            comment_visual = "<leader>/";
-            ignore_blank_line = true;
-          };
-        };
-        lazyLoad = {
-          enable = true;
-          settings = {
-            keys = [ "<leader>/" ];
-            event = [
-              "BufReadPost"
-              "BufNewFile"
-            ];
-          };
-        };
-      };
-
       trim = {
         enable = true;
         lazyLoad = {
