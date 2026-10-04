@@ -33,7 +33,6 @@
         loaded_zipPlugin = 1;
         loaded_tutor_mode_plugin = 1;
         loaded_2html_plugin = 1;
-        loaded_matchit = 1;
         loaded_matchparen = 1;
         loaded_spellfile_plugin = 1;
       };
