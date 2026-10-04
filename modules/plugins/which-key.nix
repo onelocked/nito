@@ -11,6 +11,7 @@
       mini = {
         enable = true;
         mockDevIcons = true;
+        lazyLoad.settings.event = "DeferredUIEnter";
         modules = {
           icons = { };
           pairs = { };
