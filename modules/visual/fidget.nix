@@ -8,7 +8,7 @@
           notification.window = {
             relative = "editor";
             winblend = 0;
-            border = "rounded";
+            border = "single";
           };
         };
       };

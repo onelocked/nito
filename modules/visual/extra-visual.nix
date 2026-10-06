@@ -20,7 +20,7 @@
 
           require('minty').setup({
             huefy = {
-              border = "rounded",
+              border = "single",
               mappings = function(buf)
                 local api = require("minty.shades.api")
                 vim.keymap.set("n", "s", api.save_color, { buffer = buf })

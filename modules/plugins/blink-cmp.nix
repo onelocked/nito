@@ -41,7 +41,7 @@
             },
             completion = {
               list = { selection = { preselect = true } },
-              menu = { border = "rounded" },
+              menu = { border = "single" },
               documentation = {
                 auto_show = false,
                 auto_show_delay_ms = 0,

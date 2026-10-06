@@ -23,7 +23,7 @@
       };
       globals = {
         mapleader = " ";
-        floating_window_options.border = "rounded";
+        floating_window_options.border = "single";
         loaded_netrw = 1;
         loaded_netrwPlugin = 1;
         loaded_gzip = 1;
@@ -71,6 +71,7 @@
         ''
           vim.opt.title = true
           vim.opt.titlestring = "nvim - %F%( %M%)"
+          vim.diagnostic.config({ float = { border = "single" } })
 
           vim.opt.whichwrap:append("<>[]hl")
           vim.opt.listchars:append("space:·")

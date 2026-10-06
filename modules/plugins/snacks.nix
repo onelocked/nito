@@ -103,7 +103,7 @@
                     {
                       win = "input";
                       height = 1;
-                      border = "rounded";
+                      border = "single";
                       title = "{title} {live} {flags}";
                       title_pos = "center";
                     }
@@ -118,7 +118,7 @@
                     min_width = 40;
                     height = 0;
                     position = "left";
-                    border = "rounded";
+                    border = "single";
                     box = "vertical";
                   }
                 );
@@ -141,7 +141,7 @@
                       relative = 'editor',
                       external = false,
                       focusable = false,
-                      border = 'rounded',
+                      border = 'single',
                       backdrop = false,
                       show = show,
                       bo = {
@@ -175,7 +175,7 @@
             };
           image = {
             enabled = true;
-            border = "rounded";
+            border = "single";
             doc.inline = false;
           };
           notifier = {

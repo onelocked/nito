@@ -38,7 +38,7 @@
       signs = false;
       severity_sort = false;
       float = {
-        border = "rounded";
+        border = "single";
         source = "always";
         focusable = false;
       };
