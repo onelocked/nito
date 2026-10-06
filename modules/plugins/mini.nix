@@ -19,16 +19,6 @@
         ai = { };
         bracketed = { };
       };
-      lazyLoad = {
-        enable = true;
-        settings = {
-          keys = [ "<leader>/" ];
-          event = [
-            "BufReadPost"
-            "BufNewFile"
-          ];
-        };
-      };
     };
   };
 }
