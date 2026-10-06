@@ -16,6 +16,8 @@
         surround = { };
         operators = { };
         bufremove = { };
+        ai = { };
+        bracketed = { };
       };
       lazyLoad = {
         enable = true;
