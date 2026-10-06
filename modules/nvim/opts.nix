@@ -3,8 +3,9 @@
     opts = {
       clipboard = mkRaw "vim.env.SSH_CONNECTION and '' or 'unnamedplus'"; # Sync with system clipboard
 
-      pumblend = 0;
+      pumblend = 10;
       pumheight = 10;
+      completeopt = "menu,menuone,noselect";
 
       expandtab = true;
       shiftwidth = 2;
@@ -42,7 +43,18 @@
       fillchars = {
         eob = " ";
       };
-      updatetime = 500;
+      updatetime = 300;
+      timeoutlen = 300;
+
+      scrolloff = 999;
+      sidescrolloff = 8;
+
+      confirm = true;
+      autowrite = true;
+      showmode = false;
+      wildmode = "longest:full,full";
+      wildignorecase = true;
+      shortmess = "ltToOCFI";
 
       jumpoptions = "view";
 
