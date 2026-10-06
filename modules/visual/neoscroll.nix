@@ -8,9 +8,6 @@
 
       extraConfigLua = # lua
         ''
-          -- Keep cursor centered natively
-          vim.opt.scrolloff = 999
-
           -- Setup smooth scrolling
           require('neoscroll').setup({
             mappings = {'<C-u>', '<C-d>', '<C-b>', '<C-f>', '<C-y>', '<C-e>', 'zt', 'zz', 'zb'},

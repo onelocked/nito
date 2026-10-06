@@ -2,6 +2,7 @@
   neovim.mods = {
     plugins.cord = {
       enable = true;
+      lazyLoad.settings.event = "DeferredUIEnter";
       settings = {
         display = {
           flavor = "dark";
