@@ -6,6 +6,11 @@
         "BufReadPost"
         "BufNewFile"
       ];
+      settings.mappings.pairs."'" = [
+        {
+          pair = [ "'" ];
+        }
+      ];
       settings.highlights.groups = [
         "BlinkPairsRed"
         "BlinkPairsYellow"
