@@ -1,6 +1,5 @@
 {
   neovim.mods = {
-
     extraConfigLua = # lua
       ''
         local function send_to_agy(include_snippet)
