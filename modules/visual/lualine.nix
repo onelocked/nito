@@ -24,6 +24,36 @@
           end
           symbols = get_symbols()
 
+          -- lualine puts its %< truncation mark at the first section after
+          -- lualine_b, so lualine_c is the section that gets cut when the line
+          -- is too long. The filename lives in lualine_b and is never
+          -- truncated; trouble's symbol text lives in lualine_c and is.
+
+          local filename_component = {
+            function()
+              local name = vim.fn.expand("%:t")
+              if name == "" then
+                return nil
+              end
+              local icon = ""
+              local ok, devicons = pcall(require, "nvim-web-devicons")
+              if ok then
+                icon = devicons.get_icon(name, vim.bo.filetype, { default = true }) or ""
+              end
+              return icon ~= "" and (icon .. " " .. name) or name
+            end,
+            cond = function()
+              return vim.fn.expand("%:t") ~= ""
+            end,
+          }
+
+          local symbols_component = {
+            symbols and symbols.get,
+            cond = function()
+              return symbols ~= nil and vim.b.trouble_lualine ~= false and symbols.has()
+            end,
+          }
+
           local custom_theme = {
             normal = {
               a = { fg = "${c.base01}", bg = "${
@@ -89,8 +119,8 @@
               lualine_a = { "mode" },
               lualine_b = {
                 "branch",
-                "diff",
                 "diagnostics",
+                filename_component,
               },
               lualine_c = {
                 {
@@ -112,13 +142,7 @@
                   end,
                 },
 
-                'filename',
-                {
-                  symbols and symbols.get,
-                  cond = function()
-                    return symbols ~= nil and vim.b.trouble_lualine ~= false and symbols.has()
-                  end,
-                },
+                symbols_component,
               },
               lualine_x = {
                 "encoding",
@@ -130,7 +154,7 @@
             },
             inactive_sections = {
               lualine_a = { },
-              lualine_b = { },
+              lualine_b = { filename_component },
               lualine_c = { "filename" },
               lualine_x = { "location" },
               lualine_y = { },
