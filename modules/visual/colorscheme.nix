@@ -99,10 +99,21 @@
           vim.api.nvim_set_hl(0, "PmenuThumb",      { bg = c.line_nr })
 
           -- ── Diffs ────────────────────────────────────────────────────────────────────
-          vim.api.nvim_set_hl(0, "DiffAdd",         { fg = c.string,           bg = "NONE" })
-          vim.api.nvim_set_hl(0, "DiffChange",      { fg = c.warning,          bg = "NONE" })
-          vim.api.nvim_set_hl(0, "DiffDelete",      { fg = c.error,            bg = "NONE" })
-          vim.api.nvim_set_hl(0, "DiffText",        { fg = c.bg,               bg = c.warning })
+          -- lazygit-style: translucent bg tint, fg = NONE so syntax colors stay
+          local function blend(hex, pct)
+            local r = tonumber(hex:sub(2, 3), 16)
+            local g = tonumber(hex:sub(4, 5), 16)
+            local b = tonumber(hex:sub(6, 7), 16)
+            local br, bg_, bb = tonumber(c.bg:sub(2, 3), 16), tonumber(c.bg:sub(4, 5), 16), tonumber(c.bg:sub(6, 7), 16)
+            return string.format('#%02x%02x%02x',
+              math.floor(r * pct + br * (1 - pct)),
+              math.floor(g * pct + bg_ * (1 - pct)),
+              math.floor(b * pct + bb * (1 - pct)))
+          end
+          vim.api.nvim_set_hl(0, "DiffAdd",         { fg = "NONE",             bg = blend(c.string, 0.18) })
+          vim.api.nvim_set_hl(0, "DiffChange",      { fg = "NONE",             bg = "NONE" })
+          vim.api.nvim_set_hl(0, "DiffDelete",      { fg = c.error,            bg = blend(c.error, 0.18) })
+          vim.api.nvim_set_hl(0, "DiffText",        { fg = c.fg,               bg = blend(c.string, 0.30), bold = true })
 
           -- ── Diagnostics ──────────────────────────────────────────────────────────────
           vim.api.nvim_set_hl(0, "DiagnosticError",              { fg = c.error })
