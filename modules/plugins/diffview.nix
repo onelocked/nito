@@ -49,6 +49,8 @@
                 -- no forced centring inside diffs (overrides global scrolloff = 999)
                 vim.wo[winid].scrolloff = 5
                 vim.wo[winid].wrap = true
+                vim.wo[winid].linebreak = false
+                vim.wo[winid].breakindent = false
 
                 if not ctx.layout_name:match('^diff2') then return end
                 if ctx.symbol == 'a' then -- old / left
