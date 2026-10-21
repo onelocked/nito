@@ -1,8 +1,19 @@
-{ config, lib, ... }:
+{
+  rootPath,
+  config,
+  lib,
+  ...
+}:
+let
+  inherit (lib) mkOption types;
+in
 {
   config = {
     tack = {
-      inputs.tack = "gh:manic-systems/tack";
+      inputs.tack = {
+        url = "gh:manic-systems/tack";
+        group = "nix";
+      };
       shorturls = {
         gh = "github:{path}";
       };
@@ -10,124 +21,146 @@
       all_follow = {
         nixpkgs = "nixpkgs";
         systems = "systems";
-        flake-compat = "flake-compat";
-        flake-parts = "flake-parts";
         flake-utils = "flake-utils";
+        flake-parts = "flake-parts";
         rust-overlay = "rust-overlay";
-        treefmt-nix = "treefmt-nix";
         tack = "tack";
       };
+      omit_inputs.names = [
+        "flake-compat"
+        "pre-commit-hooks"
+        "treefmt-nix"
+        "home-manager"
+        "nix-darwin"
+      ];
     };
 
     perSystem =
-      {
-        rootPath,
-        pkgs,
-        packages',
-        ...
-      }:
-      let
-        tomlFormat = (pkgs.formats.toml { }).generate;
-        serialisedInputs =
-          (
-            removeAttrs config.tack.inputs [
-              "fetch"
-              "fixed"
-            ]
-            |> lib.mapAttrs (
-              _:
-              {
-                url,
-                type,
-                exclude_follow,
-                follows,
-                ...
-              }:
-              lib.filterAttrs (name: value: value != null && value != { } && value != [ ]) {
-                inherit
-                  url
-                  type
-                  follows
-                  exclude_follow
-                  ;
-              }
-            )
-          )
-          // (
-            config.tack.inputs.fetch
-            |> lib.mapAttrs (
-              _: url: {
-                inherit url;
-                type = "fetch";
-              }
-            )
-          )
-          // (
-            config.tack.inputs.fixed
-            |> lib.mapAttrs (
-              _: url: {
-                inherit url;
-                type = "fixed";
-              }
-            )
-          );
-        tackConfig = {
-          inherit (config.tack) shorturls all_follow tack;
-          inputs = serialisedInputs;
-        };
-
-        # Read the current state of pins.toml to diff against
-        prevPins = lib.importTOML (rootPath + /.tack/pins.toml);
-
-        # Inputs that need tack update: either new or URL-changed
-        updateInputs =
-          tackConfig.inputs
-          |> lib.attrNames
-          |> lib.filter (
-            name: !(prevPins.inputs ? ${name}) || prevPins.inputs.${name}.url != tackConfig.inputs.${name}.url
-          )
-          |> lib.join " ";
-
-        # Inputs that need to be removed: exist in prevPins but not in tackConfig
-        removeInputs =
-          (prevPins.inputs or { })
-          |> lib.attrNames
-          |> lib.filter (name: !(tackConfig.inputs ? ${name}))
-          |> map (remKey: "tack rm ${remKey}")
-          |> lib.concatLines;
-      in
+      { packages', pkgs, ... }:
       {
         apps.tack-rebuild = {
           type = "app";
-          meta.description = "Sync tack pins on input changes, can pass switch/boot/test arguments";
+          meta.description = "A flake-file like, pins.toml updater for tack";
           program = lib.getExe (
             pkgs.writeShellApplication {
-              name = "tack-rebuild";
+              name = "write-tack";
+
               derivationArgs = {
                 allowSubstitutes = false;
                 preferLocalBuild = true;
               };
+
               runtimeInputs = [
-                pkgs.delta
                 packages'.tack
+                pkgs.delta
+                pkgs.nh
               ];
-              text = # bash
+
+              text =
+                let
+                  cfg = config.tack |> lib.filterAttrsRecursive (_: value: !isNull value);
+                  nameValuePairToToml = # This represents a simple Nix -> TOML name-value pair
+                    name: value: "${lib.strings.escapeNixIdentifier name} = ${mapValueToTomlRhs value}";
+                  mapAttrSetToToml = sep: lib.concatMapAttrsStringSep sep nameValuePairToToml;
+                  mapValueToTomlRhs = v: if lib.isAttrs v then "{ ${mapAttrSetToToml ", " v} }" else lib.toJSON v;
+                  # Tack options section
+                  tackOptsToml =
+                    cfg
+                    |> lib.flip lib.removeAttrs [ "inputs" ]
+                    |> lib.concatMapAttrsStringSep "" (
+                      name: value: ''
+                        [${name}]
+                        ${value |> mapAttrSetToToml "\n"}
+
+                      ''
+                    );
+                  # Tack inputs section
+                  tackInputsToml =
+                    cfg.inputs
+                    |> lib.concatMapAttrsStringSep "\n" (
+                      name: value: ''
+                        [inputs.${name}]
+                        ${value |> mapAttrSetToToml "\n"}
+                      ''
+                    );
+                  # The contents of pins.toml generated via nix
+                  tackTomlString = "${tackOptsToml}${tackInputsToml}";
+                  oldTackTomlString = lib.readFile (rootPath + /.tack/pins.toml);
+                  oldTackToml = lib.fromTOML oldTackTomlString;
+                  oldInputs = oldTackToml.inputs;
+                  newInputs = cfg.inputs;
+                  oldKeys = lib.attrNames oldInputs;
+                  newKeys = lib.attrNames newInputs;
+                  # Inputs that exist in new but not in old
+                  newInputNames = newKeys |> lib.subtractLists oldKeys;
+
+                  # Input-level options that _if changed_ should not trigger a `tack update`
+                  normalizeInput = lib.flip lib.removeAttrs [
+                    "group"
+                    "frozen"
+                    "patches"
+                  ];
+
+                  # Inputs that exist in both but have changed enough to need a `tack update`
+                  changedInputNames =
+                    (lib.intersectLists oldKeys newKeys)
+                    |> lib.filter (name: normalizeInput oldInputs.${name} != normalizeInput newInputs.${name});
+
+                  updatedInputs = newInputNames ++ changedInputNames;
+                  removedInputs = oldKeys |> lib.subtractLists newKeys;
+
+                  prevPatches = name: oldInputs.${name}.patches or [ ];
+                  currPatches = name: newInputs.${name}.patches or [ ];
+
+                  rmPatchCommands =
+                    newKeys
+                    |> lib.concatMap (
+                      name:
+                      lib.subtractLists (currPatches name) (prevPatches name)
+                      |> map (patch: "tack patch rm ${lib.escapeShellArg name} ${lib.escapeShellArg patch}")
+                    )
+                    |> lib.concatLines;
+
+                  addPatchCommands =
+                    let
+                      updatedPatchInputs =
+                        newKeys
+                        |> lib.filter (name: lib.subtractLists (prevPatches name) (currPatches name) != [ ])
+                        |> lib.join " ";
+                    in
+                    "tack patch update ${updatedPatchInputs}";
+                in
+                # bash
                 ''
-                  if [[ ! -f .tack/pins.toml ]]; then
-                    echo "Error: file not found: .tack/pins.toml" >&2
+                  PINS_FILE="''${TACK_DIR:-.tack}/pins.toml"
+
+                  if [[ ! -f "$PINS_FILE" ]]; then
+                    echo "Error: file not found: $PINS_FILE" >&2
                     exit 1
                   fi
 
-                  ${lib.optionalString (prevPins != tackConfig) ''
-                    newPinsToml="${tackConfig |> tomlFormat "pins.toml"}"
-                    delta --dark --side-by-side --line-numbers --diff-so-fancy .tack/pins.toml "$newPinsToml" || true
+                  TMP_PINS="$(mktemp -t old_pins.toml.XXXXX)"
+                  # Delete temp file on script exit
+                  trap 'rm -f "$TMP_PINS"' EXIT
 
-                    ${lib.optionalString (removeInputs != "") removeInputs}
+                  ${rmPatchCommands}
 
-                    install -m 644 -D -T "$newPinsToml" .tack/pins.toml
-                    echo "wrote .tack/pins.toml"
+                  ${removedInputs |> map (removedInput: "tack rm ${removedInput}") |> lib.concatLines}
+
+                  ${lib.optionalString (cfg != oldTackToml) /* bash */ ''
+                    mv "$PINS_FILE" "$TMP_PINS"
+                    cat << 'EOF' > "$PINS_FILE"
+                    ${tackTomlString}
+                    EOF
                   ''}
-                  ${lib.optionalString (updateInputs != "") "tack update ${updateInputs}"}
+
+                  ${lib.optionalString (updatedInputs != [ ]) "tack update ${lib.join " " updatedInputs}"}
+
+                  ${addPatchCommands}
+
+                  ${lib.optionalString (cfg != oldTackToml) # bash
+                    ''delta --dark --paging=never --diff-highlight "$TMP_PINS" "$PINS_FILE" || true''
+                  }
 
                   if [[ $# -gt 0 ]]; then
                     nh os "$@"
@@ -138,73 +171,175 @@
         };
       };
   };
+  options.tack = {
+    shorturls = mkOption {
+      type = types.nullOr (types.attrsOf types.str);
+      description = ''
+        Shorturl schemes. `scheme:rest` expands by substituting `rest` into
+        the `{path}` placeholder of the template.
+      '';
+      example = {
+        gh = "github:{path}";
+      };
+    };
 
-  options.tack = lib.mkOption {
-    description = "Tack input manager configuration.";
-    default = { };
-    type = lib.types.submodule {
-      options = {
-        shorturls = lib.mkOption {
-          type = lib.types.attrsOf lib.types.str;
-          default = { };
-        };
+    all_follow = mkOption {
+      type = types.nullOr (types.attrsOf (types.either types.str (types.listOf types.str)));
+      description = ''
+        Follow rules applied to every pin that has a matching input. Two value
+        shapes are accepted:
 
-        all_follow = lib.mkOption {
-          type = lib.types.attrsOf lib.types.str;
-          default = { };
-        };
+        - `alias = "target"`: every input named `alias` follows your top-level `target` pin.
+        - `target = [ "alias1" "alias2" ]`: the key is the canonical target, and the
+          key plus every array member alias to it.
+      '';
+      example = {
+        nixpkgs = [
+          "nixpkgs-stable"
+          "nixpkgs-unstable"
+        ];
+        fenix = "fenix";
+      };
+    };
 
-        tack = lib.mkOption {
-          type = lib.types.attrsOf lib.types.bool;
-          default = { };
-        };
+    tack = mkOption {
+      type = types.nullOr (
+        types.submodule {
+          options = {
+            recomposable = mkOption {
+              type = types.nullOr types.bool;
+            };
+          };
+        }
+      );
+    };
 
-        inputs = lib.mkOption {
-          default = { };
-          type = lib.types.submodule {
-            options = {
-              fetch = lib.mkOption {
-                type = lib.types.attrsOf lib.types.str;
-                default = { };
-                description = "Shorthand for defining multiple fetch inputs";
-              };
-              fixed = lib.mkOption {
-                type = lib.types.attrsOf lib.types.str;
-                default = { };
-                description = "Shorthand for defining multiple fixed inputs";
+    omit_inputs = mkOption {
+      type = types.nullOr (
+        types.submodule {
+          options = {
+            names = mkOption {
+              type = types.nullOr (types.listOf types.str);
+            };
+          };
+        }
+      );
+    };
+
+    inputs = mkOption {
+      default = { };
+      type = types.attrsOf (
+        types.submodule {
+          options = {
+            url = mkOption {
+              type = types.str;
+              description = "Input URL. May use one of the configured shorturl schemes.";
+              example = "gh:owner/repo";
+            };
+
+            type = mkOption {
+              type = types.nullOr (
+                types.enum [
+                  "fetch"
+                  "fixed"
+                  "flake"
+                ]
+              );
+              description = ''
+                Pin type. `flake` (tack's default when unset) evaluates the input's
+                flake.nix; `fetch` exposes only the source tree; `fixed` is a
+                hash-locked download that `tack update` will refuse to silently relock.
+              '';
+            };
+
+            unpack = mkOption {
+              type = types.nullOr (
+                types.enum [
+                  "tarball"
+                  "file"
+                ]
+              );
+              description = ''
+                Only for `type = "fixed"`. Auto-detected from the URL when unset.
+              '';
+            };
+
+            tag = mkOption {
+              type = types.nullOr types.str;
+              description = ''
+                Follow the newest release tag matching this template instead of a
+                branch. `{version}` matches numbers joined by `.`, `-` or `_`, and
+                the highest version wins; tags with words in the version are
+                skipped. A trailing `*` matches anything after the template, such
+                as a build hash, and ranks by the version alone; it can't be used
+                with `tags_from`. For `type = "fixed"` the url may name the release
+                asset with `{tag}` and `{version}`, where `{version}` is the matched
+                version.
+              '';
+              example = "GE-Proton{version}";
+            };
+
+            tags_from = mkOption {
+              type = types.nullOr types.str;
+              description = ''
+                Only with `tag` and `type = "fixed"`: read tags from this repo url
+                or http(s) page, such as a download listing, where every name the
+                template matches counts as a tag. tack takes the newest matching
+                tag whose release already has the asset.
+              '';
+              example = "https://download.linphone.org/releases/linux/app/";
+            };
+
+            group = mkOption {
+              type = types.nullOr types.str;
+              description = ''
+                Tag pins with a group to print them under headers in tack look and tack update.
+              '';
+            };
+
+            frozen = mkOption {
+              type = types.nullOr types.bool;
+              description = ''
+                A frozen pin stays at its locked rev through tack update, and only moves when named directly.
+              '';
+            };
+
+            patches = mkOption {
+              type = types.nullOr (types.listOf types.str);
+              description = "Patches to apply to the input, in order, with no import-from-derivation.";
+              example = [
+                "https://github.com/NixOS/nixpkgs/pull/444444"
+                "patches/nixpkgs/local-fix.patch"
+              ];
+            };
+
+            submodules = mkOption {
+              type = types.nullOr types.bool;
+              description = ''
+                Recursively fetch git submodules, disabled by default.
+              '';
+            };
+
+            follows = mkOption {
+              type = types.nullOr (types.attrsOf types.str);
+              description = ''
+                Point this pin's inputs at your top-level pins instead of their own lock.
+                Keys may be prefixed with `flake:` or `tack:` to target only one side
+                when an upstream has both a flake input and a tack pin of that name.
+              '';
+              example = {
+                nixpkgs = "nixpkgs";
+                "flake:systems" = "systems";
               };
             };
-            freeformType = lib.types.attrsOf (
-              lib.types.coercedTo lib.types.str (url: { inherit url; }) (
-                lib.types.submodule {
-                  options = {
-                    url = lib.mkOption {
-                      type = lib.types.str;
-                    };
-                    type = lib.mkOption {
-                      type = lib.types.nullOr (
-                        lib.types.enum [
-                          "fetch"
-                          "fixed"
-                        ]
-                      );
-                      default = null;
-                    };
-                    follows = lib.mkOption {
-                      type = lib.types.attrsOf lib.types.str;
-                      default = { };
-                    };
-                    exclude_follow = lib.mkOption {
-                      type = lib.types.listOf lib.types.str;
-                      default = [ ];
-                    };
-                  };
-                }
-              )
-            );
+
+            exclude_follow = mkOption {
+              type = types.nullOr (types.listOf types.str);
+              description = "Names of `all_follow` rules that should not apply to this pin.";
+            };
           };
-        };
-      };
+        }
+      );
     };
   };
 }

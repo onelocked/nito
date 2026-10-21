@@ -1,12 +1,19 @@
 [all_follow]
-flake-compat = "flake-compat"
 flake-parts = "flake-parts"
 flake-utils = "flake-utils"
 nixpkgs = "nixpkgs"
 rust-overlay = "rust-overlay"
 systems = "systems"
 tack = "tack"
-treefmt-nix = "treefmt-nix"
+
+[omit_inputs]
+names = ["flake-compat","pre-commit-hooks","treefmt-nix","home-manager","nix-darwin"]
+
+[shorturls]
+gh = "github:{path}"
+
+[tack]
+recomposable = true
 
 [inputs.diffview-plus]
 type = "fetch"
@@ -19,10 +26,6 @@ url = "gh:nixos/nixpkgs/nixos-unstable"
 url = "gh:nix-community/nixvim"
 
 [inputs.tack]
+group = "nix"
 url = "gh:manic-systems/tack"
 
-[shorturls]
-gh = "github:{path}"
-
-[tack]
-recomposable = true

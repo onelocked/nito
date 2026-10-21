@@ -7,8 +7,8 @@
 {
   config = {
     tack.inputs = {
-      nixpkgs = "gh:nixos/nixpkgs/nixos-unstable";
-      nixvim = "gh:nix-community/nixvim";
+      nixpkgs.url = "gh:nixos/nixpkgs/nixos-unstable";
+      nixvim.url = "gh:nix-community/nixvim";
     };
     perSystem =
       { pkgs, ... }:
