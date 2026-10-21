@@ -110,10 +110,6 @@
               math.floor(g * pct + bg_ * (1 - pct)),
               math.floor(b * pct + bb * (1 - pct)))
           end
-          vim.api.nvim_set_hl(0, "DiffAdd",         { fg = "NONE",             bg = blend(c.string, 0.18) })
-          vim.api.nvim_set_hl(0, "DiffChange",      { fg = "NONE",             bg = "NONE" })
-          vim.api.nvim_set_hl(0, "DiffDelete",      { fg = c.error,            bg = blend(c.error, 0.18) })
-          vim.api.nvim_set_hl(0, "DiffText",        { fg = c.fg,               bg = blend(c.string, 0.30), bold = true })
 
           -- ── Diagnostics ──────────────────────────────────────────────────────────────
           vim.api.nvim_set_hl(0, "DiagnosticError",              { fg = c.error })

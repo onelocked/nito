@@ -9,11 +9,24 @@
           -- split dissimilar lines into proper delete + add instead of "change"
           vim.opt.diffopt:append('linematch:60')
 
-          -- red for old side, green for new side (tweak to match your theme)
-          vim.api.nvim_set_hl(0, 'DiffviewOldLine', { bg = '#3b1f2b' })
-          vim.api.nvim_set_hl(0, 'DiffviewOldText', { bg = '#6e2a3c' })
-          vim.api.nvim_set_hl(0, 'DiffviewNewLine', { bg = '#1f3b2b' })
-          vim.api.nvim_set_hl(0, 'DiffviewNewText', { bg = '#2a6e3c' })
+          ----------------------------------------------------------------
+          -- Diffview palette: deep tinted backgrounds, NO fg / bold so
+          -- syntax highlighting stays fully readable on top.
+          ----------------------------------------------------------------
+          local function diffview_hl()
+            local set = vim.api.nvim_set_hl
+
+            set(0, 'DiffviewOldLine', { bg = '#2D0000' }) -- deep red
+            set(0, 'DiffviewOldText', { bg = '#5C0A0A' }) -- lighter red for changed words
+            set(0, 'DiffviewNewLine', { bg = '#00230C' }) -- deep green
+            set(0, 'DiffviewNewText', { bg = '#06471F' }) -- lighter green for changed words
+
+            -- filler lines (the empty space opposite an add/delete)
+            set(0, 'DiffviewFiller', { fg = '#2a2a33', bg = '#16161a' })
+          end
+
+          diffview_hl()
+          vim.api.nvim_create_autocmd('ColorScheme', { callback = diffview_hl })
 
           require('diffview').setup({
             enhanced_diff_hl = true,
@@ -37,13 +50,15 @@
                 if not ctx.layout_name:match('^diff2') then return end
                 if ctx.symbol == 'a' then -- old / left
                   vim.wo[winid].winhl = table.concat({
-                    'DiffAdd:DiffviewDiffAddAsDelete',
-                    'DiffDelete:DiffviewDiffDeleteDim',
+                    'DiffAdd:DiffviewOldLine',
+                    'DiffDelete:DiffviewFiller',
                     'DiffChange:DiffviewOldLine',
                     'DiffText:DiffviewOldText',
                   }, ',')
                 elseif ctx.symbol == 'b' then -- new / right
                   vim.wo[winid].winhl = table.concat({
+                    'DiffAdd:DiffviewNewLine',
+                    'DiffDelete:DiffviewFiller',
                     'DiffChange:DiffviewNewLine',
                     'DiffText:DiffviewNewText',
                   }, ',')
