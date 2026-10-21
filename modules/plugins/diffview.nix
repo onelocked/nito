@@ -1,8 +1,22 @@
 {
+  tack.inputs.diffview-plus = {
+    url = "gh:dlyongemallo/diffview-plus.nvim/ba05af7a295dcd8449bd03ebb3aead8268a5c379"; # NOTE: pinned rev because rev 22a293181f6132d175efbbf279c251d7f01d1e8b breaks folding for me in file history
+    type = "fetch";
+  };
   neovim.mods =
-    { pkgs, mkRaw, ... }:
     {
-      extraPlugins = with pkgs.vimPlugins; [ diffview-plus-nvim ];
+      pkgs,
+      mkRaw,
+      inputs,
+      ...
+    }:
+    {
+      extraPlugins = [
+        (pkgs.vimPlugins.diffview-plus-nvim.overrideAttrs (old: {
+          version = inputs._meta.diffview-plus.rev;
+          src = inputs.diffview-plus;
+        }))
+      ];
 
       extraConfigLua = # lua
         ''

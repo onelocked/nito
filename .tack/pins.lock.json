@@ -1,47 +1,56 @@
 {
   "$declared": {
+    "diffview-plus": "github:dlyongemallo/diffview-plus.nvim/ba05af7a295dcd8449bd03ebb3aead8268a5c379",
     "nixpkgs": "github:nixos/nixpkgs/nixos-unstable",
     "nixvim": "github:nix-community/nixvim",
     "tack": "github:manic-systems/tack"
+  },
+  "diffview-plus": {
+    "type": "github",
+    "owner": "dlyongemallo",
+    "repo": "diffview-plus.nvim",
+    "rev": "ba05af7a295dcd8449bd03ebb3aead8268a5c379",
+    "narHash": "sha256-sDsHjvQRpPRk6HCUU2mtdqkzH9uJ0ccZjk7Y9HUVWvI=",
+    "lastModified": 1788720452
   },
   "flake-parts": {
     "type": "github",
     "owner": "hercules-ci",
     "repo": "flake-parts",
-    "rev": "31729ca8cbdb4fa927b34e5f4353e6a83f39e993",
-    "narHash": "sha256-glZLQlzIn1fXH6PazR2iUmTo7kzzyYSshrWhLS9TqCU=",
-    "lastModified": 1788450739
+    "rev": "024633cd702b10285db5cb19b40ad48d2399ba60",
+    "narHash": "sha256-zTwuwezD0w3hpga6a6P8emidzAZFyWqlNeRBlpWOOl8=",
+    "lastModified": 1790898470
   },
   "nixpkgs": {
     "type": "github",
     "owner": "nixos",
     "repo": "nixpkgs",
-    "rev": "c59305bab2065cfecc4944690d9eedbb56f3a9fa",
-    "narHash": "sha256-69xHQhAeMAD2wDXO7T2pcOZIF9Sga2W+JkmY2a11Ops=",
-    "lastModified": 1790822859
+    "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+    "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
+    "lastModified": 1792502884
   },
   "nixvim": {
     "type": "github",
     "owner": "nix-community",
     "repo": "nixvim",
-    "rev": "1cdfef1a6eb583d65b606b04fc97687491479d62",
-    "narHash": "sha256-EeMn6SmrBe4gnxaMyb3NZYMXG8FPF9PY0OCcbPDFFNI=",
-    "lastModified": 1790928658
+    "rev": "453dc9c5037e6d1bec81d2a51ddacd58a2f44e9c",
+    "narHash": "sha256-yJ072hxngo/srNdLTp4BlFeo0hedwnKicI3TGlSXLFE=",
+    "lastModified": 1792203519
   },
   "systems": {
     "type": "github",
     "owner": "nix-systems",
     "repo": "default",
-    "rev": "c29398b59d2048c4ab79345812849c9bd15e9150",
-    "narHash": "sha256-brhZ8DmuGtzkCYHJg4HEd602amKm89Y9ytsFZ5uWD1w=",
-    "lastModified": 1774449309
+    "rev": "d36eeed142f88b5a636f2e3856a53c61654cf29b",
+    "narHash": "sha256-uuanbkFk8a313Zfrxdcz8Us/yQtaxNnKJtX8v0ZPpd8=",
+    "lastModified": 1791244623
   },
   "tack": {
     "type": "github",
     "owner": "manic-systems",
     "repo": "tack",
-    "rev": "4aaed84df55c1f116ccd81d7bc0fb818a068955f",
-    "narHash": "sha256-5fc6+wvlE5yUPkrbgi9xSWsaVRA54qLuMot4sCoLm2E=",
-    "lastModified": 1790920390
+    "rev": "8573f1f1bda4aa467fa341b33f6004661833c022",
+    "narHash": "sha256-wwkmmsr5u8MknxrF9ZdIN90wk09weXCaVQp8aeWdYaE=",
+    "lastModified": 1792416927
   }
 }
