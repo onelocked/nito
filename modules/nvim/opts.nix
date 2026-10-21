@@ -31,7 +31,10 @@
 
       undofile = true;
 
-      wrap = false;
+      wrap = true;
+      linebreak = true; # wrap at word boundaries instead of mid-word
+      breakindent = true; # wrapped lines keep the indentation of the original line
+      showbreak = "   󱞵 ";
 
       virtualedit = "block";
       winborder = "single";
@@ -70,8 +73,6 @@
       showmatch = true; # Highlight matching parentheses, etc
       incsearch = true;
       hlsearch = true;
-
-      showbreak = "   󱞵 ";
     };
   };
 }

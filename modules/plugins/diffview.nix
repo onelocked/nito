@@ -45,8 +45,11 @@
                 pcall(vim.treesitter.start, bufnr)
               end,
 
-              -- old side = red, new side = green, even for "changed" lines
               diff_buf_win_enter = function(bufnr, winid, ctx)
+                -- no forced centring inside diffs (overrides global scrolloff = 999)
+                vim.wo[winid].scrolloff = 5
+                vim.wo[winid].wrap = true
+
                 if not ctx.layout_name:match('^diff2') then return end
                 if ctx.symbol == 'a' then -- old / left
                   vim.wo[winid].winhl = table.concat({
