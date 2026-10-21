@@ -48,16 +48,6 @@
         }
         {
           mode = "n";
-          key = "<leader>gK";
-          action = ":lua require('gitsigns').blame()<CR>";
-          options = {
-            desc = "Blame File";
-            silent = true;
-            noremap = true;
-          };
-        }
-        {
-          mode = "n";
           key = "<leader>gf";
           action = (
             mkRaw "function() require('gitsigns').toggle_linehl(); require('gitsigns').toggle_deleted() end"
