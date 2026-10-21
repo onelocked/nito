@@ -20,8 +20,7 @@
 
       extraConfigLua = # lua
         ''
-          -- split dissimilar lines into proper delete + add instead of "change"
-          vim.opt.diffopt:append('linematch:60')
+          vim.opt.diffopt:append({ "algorithm:histogram", "indent-heuristic", })
 
           ----------------------------------------------------------------
           -- Diffview palette: deep tinted backgrounds, NO fg / bold so
@@ -60,11 +59,11 @@
               end,
 
               diff_buf_win_enter = function(bufnr, winid, ctx)
+                vim.wo[winid].number = true
+                vim.wo[winid].relativenumber = false
                 -- no forced centring inside diffs (overrides global scrolloff = 999)
                 vim.wo[winid].scrolloff = 5
                 vim.wo[winid].wrap = true
-                vim.wo[winid].linebreak = false
-                vim.wo[winid].breakindent = false
 
                 if not ctx.layout_name:match('^diff2') then return end
                 if ctx.symbol == 'a' then -- old / left
