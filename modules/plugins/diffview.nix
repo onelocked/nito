@@ -49,6 +49,19 @@
                   }, ',')
                 end
               end,
+
+              -- start with the file panel closed (toggle it back with your panel key)
+              view_opened = function(view)
+                -- only for regular diff views, leave the file history log panel alone
+                local ok, DiffView = pcall(function()
+                  return require('diffview.scene.views.diff.diff_view').DiffView
+                end)
+                if not (ok and view:instanceof(DiffView)) then return end
+
+                vim.schedule(function()
+                  pcall(function() view.panel:close() end)
+                end)
+              end,
             },
           })
         '';
