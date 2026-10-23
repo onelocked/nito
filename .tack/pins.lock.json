@@ -3,6 +3,7 @@
     "diffview-plus": "github:dlyongemallo/diffview-plus.nvim/ba05af7a295dcd8449bd03ebb3aead8268a5c379",
     "nixpkgs": "github:nixos/nixpkgs/nixos-unstable",
     "nixvim": "github:nix-community/nixvim",
+    "opencode-nvim": "github:nickjvandyke/opencode.nvim",
     "tack": "github:manic-systems/tack"
   },
   "diffview-plus": {
@@ -36,6 +37,14 @@
     "rev": "453dc9c5037e6d1bec81d2a51ddacd58a2f44e9c",
     "narHash": "sha256-yJ072hxngo/srNdLTp4BlFeo0hedwnKicI3TGlSXLFE=",
     "lastModified": 1792203519
+  },
+  "opencode-nvim": {
+    "type": "github",
+    "owner": "nickjvandyke",
+    "repo": "opencode.nvim",
+    "rev": "e7643e9efc878876bb9c68da6cf30c45d6c34e5a",
+    "narHash": "sha256-WZ34IAqkAHins0ni6On3l8z8ziJ2nmarnWJrsWQJs/Q=",
+    "lastModified": 1792440727
   },
   "systems": {
     "type": "github",

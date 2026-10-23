@@ -25,6 +25,10 @@ url = "gh:nixos/nixpkgs/nixos-unstable"
 [inputs.nixvim]
 url = "gh:nix-community/nixvim"
 
+[inputs.opencode-nvim]
+type = "fetch"
+url = "gh:nickjvandyke/opencode.nvim"
+
 [inputs.tack]
 group = "nix"
 url = "gh:manic-systems/tack"
