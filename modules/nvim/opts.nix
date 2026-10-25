@@ -1,7 +1,7 @@
 {
-  neovim.core = { mkRaw, ... }: {
+  neovim.core = { ... }: {
     opts = {
-      clipboard = mkRaw "vim.env.SSH_CONNECTION and '' or 'unnamedplus'"; # Sync with system clipboard
+      clipboard = "unnamedplus"; # Sync with system clipboard (OSC 52 over SSH)
 
       pumblend = 10;
       pumheight = 10;

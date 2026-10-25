@@ -69,6 +69,21 @@
       extraLuaPackages = lp: with lp; [ luarocks ];
       extraConfigLua = # lua
         ''
+          if vim.env.SSH_CONNECTION or vim.env.SSH_CLIENT or vim.env.SSH_TTY then
+            local osc52 = require("vim.ui.clipboard.osc52")
+            vim.g.clipboard = {
+              name = "OSC 52",
+              copy = {
+                ["+"] = osc52.copy("+"),
+                ["*"] = osc52.copy("*"),
+              },
+              paste = {
+                ["+"] = osc52.paste("+"),
+                ["*"] = osc52.paste("*"),
+              },
+            }
+          end
+
           vim.opt.title = true
           vim.opt.titlestring = "nvim - %F%( %M%)"
           vim.diagnostic.config({ float = { border = "single" } })
