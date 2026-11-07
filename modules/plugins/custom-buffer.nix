@@ -87,7 +87,8 @@
             table.insert(cmd, "+" .. line)
           end
           table.insert(cmd, vim.fn.fnamemodify(file, ":p"))
-          pcall(vim.fn.jobstart, cmd, { detach = true })
+          local ok, job = pcall(vim.fn.jobstart, cmd, { detach = true })
+          return ok and type(job) == "number" and job > 0
         end
 
         _G.move_buf_to_kitty = function()
@@ -103,7 +104,10 @@
 
           vim.cmd("silent update")
           local pos = vim.api.nvim_win_get_cursor(0)
-          _G.open_in_kitty(name, pos[1], pos[2] + 1)
+          if not _G.open_in_kitty(name, pos[1], pos[2] + 1) then
+            vim.notify("Failed to open a kitty window", vim.log.levels.WARN)
+            return
+          end
 
           if _G.Snacks and Snacks.bufdelete then
             Snacks.bufdelete(buf)
