@@ -3,9 +3,14 @@
     extraConfigLua = # lua
       ''
         local function realpath(path)
-          return (vim.uv or vim.loop).fs_realpath(path) or vim.fn.fnamemodify(path, ":p")
+          return vim.uv.fs_realpath(path) or vim.fn.fnamemodify(path, ":p")
         end
         _G.realpath = realpath
+
+        local function jump(pos)
+          pcall(vim.api.nvim_win_set_cursor, 0, pos)
+          vim.cmd("normal! zz")
+        end
 
         -- Also called over RPC by other instances.
         _G.nvim_focus_file = function(target, pos)
@@ -19,8 +24,7 @@
                 vim.api.nvim_set_current_buf(buf)
               end
               if pos then
-                pcall(vim.api.nvim_win_set_cursor, 0, { pos[1], pos[2] })
-                vim.cmd("normal! zz")
+                jump(pos)
               end
               return { found = true, kitty_id = vim.env.KITTY_WINDOW_ID }
             end
@@ -36,10 +40,9 @@
 
         _G.focus_if_open_elsewhere = function(path, pos)
           local target = realpath(path)
-
-          local local_hit = _G.nvim_focus_file(target, pos)
-          if local_hit then
-            focus_kitty_window(local_hit.kitty_id)
+          local hit = _G.nvim_focus_file(target, pos)
+          if hit then
+            focus_kitty_window(hit.kitty_id)
             return true
           end
 
@@ -53,7 +56,7 @@
                   { target, pos }
                 )
                 pcall(vim.fn.chanclose, chan)
-                if req_ok and type(result) == "table" and result.found then
+                if req_ok and type(result) == "table" then
                   focus_kitty_window(result.kitty_id)
                   return true
                 end
@@ -69,14 +72,13 @@
           end
           vim.cmd("edit " .. vim.fn.fnameescape(path))
           if pos then
-            pcall(vim.api.nvim_win_set_cursor, 0, pos)
-            vim.cmd("normal! zz")
+            jump(pos)
           end
           return false
         end
 
+        -- Kitty helpers
         _G.open_in_kitty = function(file, line, col)
-          -- exepath resolves the wrapper; v:progpath is the unwrapped binary.
           local nvim = vim.fn.exepath("nvim")
           local cmd = { "kitty", "-1", nvim ~= "" and nvim or "nvim" }
           if line and col then
@@ -91,23 +93,15 @@
         _G.move_buf_to_kitty = function()
           local buf = vim.api.nvim_get_current_buf()
           local name = vim.api.nvim_buf_get_name(buf)
-
           if name == "" or vim.bo[buf].buftype ~= "" then
             vim.notify("Nothing to move: not a file buffer", vim.log.levels.WARN)
             return
           end
-
-          local others = vim.tbl_filter(function(b)
-            return b.bufnr ~= buf
-          end, vim.fn.getbufinfo({ buflisted = 1 }))
-          if #others == 0 then
+          if #vim.fn.getbufinfo({ buflisted = 1 }) <= 1 then
             return
           end
 
-          if vim.bo[buf].modified then
-            vim.cmd("silent update")
-          end
-
+          vim.cmd("silent update")
           local pos = vim.api.nvim_win_get_cursor(0)
           _G.open_in_kitty(name, pos[1], pos[2] + 1)
 
@@ -122,18 +116,17 @@
           _G.open_in_kitty(opts.args)
         end, { nargs = 1, complete = "file" })
 
-        vim.api.nvim_create_user_command("Kmove", function()
-          _G.move_buf_to_kitty()
-        end, {})
+        vim.api.nvim_create_user_command("Kmove", _G.move_buf_to_kitty, {})
 
+        -- Lazygit logic
         _G.LazygitEdit = function(path, line)
           vim.defer_fn(function()
-            local pos = line > 0 and { line, 0 } or nil
-            _G.edit_or_focus(path, pos)
+            _G.edit_or_focus(path, line > 0 and { line, 0 } or nil)
           end, 100)
           return 0
         end
 
+        -- Yazi logic
         local ok, yazi = pcall(require, "yazi")
         if ok then
           yazi.setup {
