@@ -129,16 +129,6 @@
           end, 100)
           return 0
         end
-
-        -- Yazi logic
-        local ok, yazi = pcall(require, "yazi")
-        if ok then
-          yazi.setup {
-            open_file_function = function(chosen_file)
-              _G.edit_or_focus(chosen_file)
-            end,
-          }
-        end
       '';
 
     keymaps = [
@@ -152,6 +142,14 @@
         };
       }
     ];
+
+    nito.yazi.settings = {
+      open_file_function = mkRaw ''
+        function(chosen_file)
+          _G.edit_or_focus(chosen_file)
+        end
+      '';
+    };
 
     plugins.snacks.settings.picker.actions = {
       focus_or_edit = mkRaw ''
