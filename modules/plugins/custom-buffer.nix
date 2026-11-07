@@ -2,26 +2,91 @@
   neovim.mods = { mkRaw, ... }: {
     extraConfigLua = # lua
       ''
-        _G.open_in_kitty = function(file, line, col)
-          -- Expand to absolute path to ensure kitty finds it
-          local path = vim.fn.fnamemodify(file, ":p")
-          local cmd = "kitty -1 nvim"
-          if line and col then
-            cmd = cmd .. string.format(" '+call cursor(%d, %d)'", line, col)
-          elseif line then
-            cmd = cmd .. string.format(" '+%d'", line)
-          end
-          -- Escape the path properly
-          cmd = cmd .. string.format(" %s", vim.fn.shellescape(path))
+        local function realpath(path)
+          return (vim.uv or vim.loop).fs_realpath(path) or vim.fn.fnamemodify(path, ":p")
+        end
+        _G.realpath = realpath
 
-          -- Spawn the kitty window asynchronously
-          os.execute(cmd .. " >/dev/null 2>&1 &")
+        -- Also called over RPC by other instances.
+        _G.nvim_focus_file = function(target, pos)
+          for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+            local name = vim.api.nvim_buf_get_name(buf)
+            if name ~= "" and vim.bo[buf].buflisted and realpath(name) == target then
+              local wins = vim.fn.win_findbuf(buf)
+              if #wins > 0 then
+                vim.api.nvim_set_current_win(wins[1])
+              else
+                vim.api.nvim_set_current_buf(buf)
+              end
+              if pos then
+                pcall(vim.api.nvim_win_set_cursor, 0, { pos[1], pos[2] })
+                vim.cmd("normal! zz")
+              end
+              return { found = true, kitty_id = vim.env.KITTY_WINDOW_ID }
+            end
+          end
+          return nil
         end
 
-        -- Provide a command to manually open a file in a new kitty window
-        vim.api.nvim_create_user_command("Kedit", function(opts)
-          _G.open_in_kitty(opts.args)
-        end, { nargs = 1, complete = "file" })
+        local function focus_kitty_window(id)
+          if id and id ~= "" then
+            pcall(vim.fn.jobstart, { "kitty", "@", "focus-window", "-m", "id:" .. id }, { detach = true })
+          end
+        end
+
+        _G.focus_if_open_elsewhere = function(path, pos)
+          local target = realpath(path)
+
+          local local_hit = _G.nvim_focus_file(target, pos)
+          if local_hit then
+            focus_kitty_window(local_hit.kitty_id)
+            return true
+          end
+
+          for _, socket in ipairs(vim.fn.serverlist({ peer = true })) do
+            if socket ~= vim.v.servername then
+              local ok, chan = pcall(vim.fn.sockconnect, "pipe", socket, { rpc = true })
+              if ok and chan > 0 then
+                local req_ok, result = pcall(
+                  vim.rpcrequest, chan, "nvim_exec_lua",
+                  "return _G.nvim_focus_file(...)",
+                  { target, pos }
+                )
+                pcall(vim.fn.chanclose, chan)
+                if req_ok and type(result) == "table" and result.found then
+                  focus_kitty_window(result.kitty_id)
+                  return true
+                end
+              end
+            end
+          end
+          return false
+        end
+
+        _G.edit_or_focus = function(path, pos)
+          if _G.focus_if_open_elsewhere(path, pos) then
+            return true
+          end
+          vim.cmd("edit " .. vim.fn.fnameescape(path))
+          if pos then
+            pcall(vim.api.nvim_win_set_cursor, 0, pos)
+            vim.cmd("normal! zz")
+          end
+          return false
+        end
+
+        _G.open_in_kitty = function(file, line, col)
+          -- exepath resolves the wrapper; v:progpath is the unwrapped binary.
+          local nvim = vim.fn.exepath("nvim")
+          local cmd = { "kitty", "-1", nvim ~= "" and nvim or "nvim" }
+          if line and col then
+            table.insert(cmd, string.format("+call cursor(%d, %d)", line, col))
+          elseif line then
+            table.insert(cmd, "+" .. line)
+          end
+          table.insert(cmd, vim.fn.fnamemodify(file, ":p"))
+          pcall(vim.fn.jobstart, cmd, { detach = true })
+        end
 
         _G.move_buf_to_kitty = function()
           local buf = vim.api.nvim_get_current_buf()
@@ -53,9 +118,30 @@
           end
         end
 
+        vim.api.nvim_create_user_command("Kedit", function(opts)
+          _G.open_in_kitty(opts.args)
+        end, { nargs = 1, complete = "file" })
+
         vim.api.nvim_create_user_command("Kmove", function()
           _G.move_buf_to_kitty()
         end, {})
+
+        _G.LazygitEdit = function(path, line)
+          vim.defer_fn(function()
+            local pos = line > 0 and { line, 0 } or nil
+            _G.edit_or_focus(path, pos)
+          end, 100)
+          return 0
+        end
+
+        local ok, yazi = pcall(require, "yazi")
+        if ok then
+          yazi.setup {
+            open_file_function = function(chosen_file)
+              _G.edit_or_focus(chosen_file)
+            end,
+          }
+        end
       '';
 
     keymaps = [
@@ -71,31 +157,27 @@
     ];
 
     plugins.snacks.settings.picker.actions = {
-      hypr_focus_or_edit = mkRaw ''
+      focus_or_edit = mkRaw ''
         function(picker, item, action)
           local confirm = require("snacks.picker.actions").confirm
           if not item or not (item.file or item._path) then
             return confirm(picker, item, action)
           end
 
-          local function real(p)
-            return (vim.uv.fs_realpath(p)) or vim.fn.fnamemodify(p, ":p")
-          end
-
           local raw = item._path or item.file
-          local path
+          local target
           if raw:sub(1, 1) == "/" or raw:sub(1, 1) == "~" then
-            path = vim.fn.fnamemodify(raw, ":p")
+            target = _G.realpath(vim.fn.fnamemodify(raw, ":p"))
           else
             local base = item.cwd or picker.cwd or vim.fn.getcwd()
-            path = vim.fn.fnamemodify(base .. "/" .. raw, ":p")
+            target = _G.realpath(vim.fn.fnamemodify(base .. "/" .. raw, ":p"))
           end
-          local target = real(path)
 
+          -- Don't leave the picker for its own preview.
           local main_win = picker.main
           if main_win and vim.api.nvim_win_is_valid(main_win) then
-            local cur_name = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(main_win))
-            if cur_name ~= "" and real(cur_name) == target then
+            local name = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(main_win))
+            if name ~= "" and _G.realpath(name) == target then
               picker:close()
               if item.pos then
                 pcall(vim.api.nvim_win_set_cursor, main_win, { item.pos[1], item.pos[2] })
@@ -105,54 +187,7 @@
             end
           end
 
-          local remote_code = [[
-            local target, pos = ...
-            local function real(p)
-              return (vim.uv.fs_realpath(p)) or vim.fn.fnamemodify(p, ":p")
-            end
-            for _, b in ipairs(vim.api.nvim_list_bufs()) do
-              local name = vim.api.nvim_buf_get_name(b)
-              if name ~= "" and vim.bo[b].buflisted and real(name) == target then
-                local wins = vim.fn.win_findbuf(b)
-                if #wins > 0 then
-                  vim.api.nvim_set_current_win(wins[1])
-                else
-                  vim.api.nvim_set_current_buf(b)
-                end
-                if pos then
-                  pcall(vim.api.nvim_win_set_cursor, 0, { pos[1], pos[2] })
-                  vim.cmd("normal! zz")
-                end
-                return vim.env.KITTY_WINDOW_ID or false
-              end
-            end
-            return false
-          ]]
-
-          local kitty_window_id = nil
-          local self_socket = vim.v.servername
-          local uid = vim.fn.system("id -u"):gsub("%s+", "")
-          local sockets = vim.fn.glob("/run/user/" .. uid .. "/nvim.*.0", true, true)
-
-          for _, socket in ipairs(sockets) do
-            if socket ~= self_socket then
-              local connect_ok, chan_id = pcall(vim.fn.sockconnect, "pipe", socket, { rpc = true })
-              if connect_ok and chan_id > 0 then
-                local req_ok, result = pcall(
-                  vim.rpcrequest, chan_id, "nvim_exec_lua", remote_code,
-                  { target, item.pos and { item.pos[1], item.pos[2] } or false }
-                )
-                pcall(vim.fn.chanclose, chan_id)
-                if req_ok and result and result ~= vim.NIL then
-                  kitty_window_id = result
-                  break
-                end
-              end
-            end
-          end
-
-          if kitty_window_id then
-            os.execute(string.format("kitty @ focus-window -m id:%s >/dev/null 2>&1", kitty_window_id))
+          if _G.focus_if_open_elsewhere(target, item.pos) then
             picker:close()
             return
           end
@@ -161,6 +196,5 @@
         end
       '';
     };
-
   };
 }

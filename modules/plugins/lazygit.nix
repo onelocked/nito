@@ -3,25 +3,6 @@
     { pkgs, mkRaw, ... }:
     {
       extraPlugins = [ pkgs.vimPlugins.lazygit-nvim ];
-
-      extraConfigLua = # lua
-        ''
-          _G.LazygitEdit = function(path, line)
-            vim.defer_fn(function()
-              local pos = line > 0 and { line, 0 } or nil
-              if _G.focus_if_open_elsewhere(path, pos) then
-                return
-              end
-              vim.cmd("edit " .. vim.fn.fnameescape(path))
-              if pos then
-                pcall(vim.api.nvim_win_set_cursor, 0, pos)
-                vim.cmd("normal! zz")
-              end
-            end, 100)
-            return 0
-          end
-        '';
-
       plugins.lz-n.plugins = [
         {
           __unkeyed-1 = "lazygit.nvim";
