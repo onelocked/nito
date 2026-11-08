@@ -22,9 +22,25 @@
           key = "<leader>gg";
           action = mkRaw ''
             function()
-              local buf_dir = vim.fn.expand("%:p:h")
-              local git_root = vim.fn.systemlist("git -C " .. vim.fn.shellescape(buf_dir) .. " rev-parse --show-toplevel")[1]
-              local cwd = (git_root and vim.v.shell_error == 0) and git_root or buf_dir
+              local cwd
+              local ok, lib = pcall(require, "diffview.lib")
+              if ok then
+                local view = lib.get_current_view()
+                cwd = view and view.adapter and view.adapter.ctx and view.adapter.ctx.toplevel
+              end
+
+              if not cwd then
+                local bufname = vim.api.nvim_buf_get_name(0)
+                local is_path = bufname ~= "" and not bufname:match("^%a[%w+.-]*://")
+                local buf_dir = is_path and vim.fn.fnamemodify(bufname, ":p:h")
+
+                if buf_dir and vim.fn.isdirectory(buf_dir) == 1 then
+                  local git_root = vim.fn.systemlist("git -C " .. vim.fn.shellescape(buf_dir) .. " rev-parse --show-toplevel")[1]
+                  cwd = (git_root and vim.v.shell_error == 0) and git_root or buf_dir
+                end
+              end
+
+              cwd = cwd or vim.fn.getcwd()
               vim.cmd("lcd " .. vim.fn.fnameescape(cwd))
               vim.cmd("LazyGit")
             end
