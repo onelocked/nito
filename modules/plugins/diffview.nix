@@ -6,7 +6,6 @@
   neovim.mods =
     {
       pkgs,
-      mkRaw,
       inputs,
       ...
     }:
@@ -22,17 +21,13 @@
         ''
           vim.opt.diffopt:append({ "algorithm:histogram", "indent-heuristic", })
 
-          ----------------------------------------------------------------
-          -- Diffview palette: deep tinted backgrounds, NO fg / bold so
-          -- syntax highlighting stays fully readable on top.
-          ----------------------------------------------------------------
           local function diffview_hl()
             local set = vim.api.nvim_set_hl
 
-            set(0, 'DiffviewOldLine', { bg = '#2D0000' }) -- deep red
-            set(0, 'DiffviewOldText', { bg = '#5C0A0A' }) -- lighter red for changed words
-            set(0, 'DiffviewNewLine', { bg = '#00230C' }) -- deep green
-            set(0, 'DiffviewNewText', { bg = '#06471F' }) -- lighter green for changed words
+            set(0, 'DiffviewOldLine', { bg = '#2D0000' })
+            set(0, 'DiffviewOldText', { bg = '#5C0A0A' })
+            set(0, 'DiffviewNewLine', { bg = '#00230C' })
+            set(0, 'DiffviewNewText', { bg = '#06471F' })
 
             -- filler lines (the empty space opposite an add/delete)
             set(0, 'DiffviewFiller', { fg = '#2a2a33', bg = '#16161a' })
@@ -97,30 +92,50 @@
               end,
             },
           })
+          -- make diffview close with regular :q
+          local function diffview_close_abbrev(lhs, replacement)
+            if vim.fn.getcmdtype() ~= ':' then return lhs end
+            if vim.trim(vim.fn.getcmdline()) ~= lhs then return lhs end
+
+            local ok, lib = pcall(require, 'diffview.lib')
+            if not ok or not lib.get_current_view() then return lhs end
+
+            return replacement
+          end
+
+          -- :wq needs to write the current buffer before closing, unlike :q.
+          pcall(vim.api.nvim_del_user_command, 'DiffviewWriteAndClose')
+          vim.api.nvim_create_user_command('DiffviewWriteAndClose', function(opts)
+            local ok, lib = pcall(require, 'diffview.lib')
+            if not ok or not lib.get_current_view() then
+              vim.cmd(opts.bang and 'wq!' or 'wq')
+              return
+            end
+
+            local bufnr = vim.api.nvim_get_current_buf()
+            if vim.bo[bufnr].modified then
+              vim.cmd(opts.bang and 'write!' or 'write')
+            end
+
+            vim.cmd(opts.bang and 'DiffviewClose!' or 'DiffviewClose')
+          end, { bang = true })
+
+          function _G.__diffview_q_abbrev() return diffview_close_abbrev('q', 'DiffviewClose') end
+          function _G.__diffview_wq_abbrev() return diffview_close_abbrev('wq', 'DiffviewWriteAndClose') end
+
+          vim.cmd([[
+            cnoreabbrev <expr> q  v:lua.__diffview_q_abbrev()
+            cnoreabbrev <expr> wq v:lua.__diffview_wq_abbrev()
+          ]])
         '';
 
       keymaps = [
         {
           mode = "n";
           key = "<leader>gd";
-          action = (
-            mkRaw ''
-              function()
-                local lib = require('diffview.lib')
-                if lib.get_current_view() then
-                  vim.cmd('DiffviewClose')
-                  -- if only a panel closed and the view is still there, close its tab
-                  if lib.get_current_view() then
-                    pcall(vim.cmd, 'tabclose')
-                  end
-                else
-                  vim.cmd('DiffviewOpen')
-                end
-              end
-            ''
-          );
+          action = ":DiffviewOpen<CR>";
           options = {
-            desc = "Diffview Toggle";
+            desc = "Diffview Open";
             silent = true;
             noremap = true;
           };
