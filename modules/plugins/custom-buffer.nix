@@ -1,5 +1,5 @@
 {
-  neovim.mods = { mkRaw, ... }: {
+  neovim.mods = { mkRaw, lib, ... }: {
     extraConfigLua = # lua
       ''
         local function realpath(path)
@@ -151,45 +151,60 @@
       '';
     };
 
-    plugins.snacks.settings.picker.actions = {
-      focus_or_edit = mkRaw ''
-        function(picker, item, action)
-          local confirm = require("snacks.picker.actions").confirm
-          if not item or not (item.file or item._path) then
-            return confirm(picker, item, action)
-          end
-
-          local raw = item._path or item.file
-          local target
-          if raw:sub(1, 1) == "/" or raw:sub(1, 1) == "~" then
-            target = _G.realpath(vim.fn.fnamemodify(raw, ":p"))
-          else
-            local base = item.cwd or picker.cwd or vim.fn.getcwd()
-            target = _G.realpath(vim.fn.fnamemodify(base .. "/" .. raw, ":p"))
-          end
-
-          -- Don't leave the picker for its own preview.
-          local main_win = picker.main
-          if main_win and vim.api.nvim_win_is_valid(main_win) then
-            local name = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(main_win))
-            if name ~= "" and _G.realpath(name) == target then
-              picker:close()
-              if item.pos then
-                pcall(vim.api.nvim_win_set_cursor, main_win, { item.pos[1], item.pos[2] })
-                vim.api.nvim_win_call(main_win, function() vim.cmd("normal! zz") end)
+    plugins.snacks.settings.picker =
+      let
+        confirmKey = (lib.nixvim.listToUnkeyedAttrs [ "focus_or_edit" ]) // {
+          mode = [
+            "n"
+            "i"
+          ];
+        };
+      in
+      {
+        win = {
+          input.keys."<CR>" = confirmKey;
+          list.keys."<CR>" = confirmKey;
+        };
+        actions = {
+          focus_or_edit = mkRaw ''
+            function(picker, item, action)
+              local confirm = require("snacks.picker.actions").confirm
+              if not item or not (item.file or item._path) then
+                return confirm(picker, item, action)
               end
-              return
+
+              local raw = item._path or item.file
+              local target
+              if raw:sub(1, 1) == "/" or raw:sub(1, 1) == "~" then
+                target = _G.realpath(vim.fn.fnamemodify(raw, ":p"))
+              else
+                local base = item.cwd or picker.cwd or vim.fn.getcwd()
+                target = _G.realpath(vim.fn.fnamemodify(base .. "/" .. raw, ":p"))
+              end
+
+              -- Don't leave the picker for its own preview.
+              local main_win = picker.main
+              if main_win and vim.api.nvim_win_is_valid(main_win) then
+                local name = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(main_win))
+                if name ~= "" and _G.realpath(name) == target then
+                  picker:close()
+                  if item.pos then
+                    pcall(vim.api.nvim_win_set_cursor, main_win, { item.pos[1], item.pos[2] })
+                    vim.api.nvim_win_call(main_win, function() vim.cmd("normal! zz") end)
+                  end
+                  return
+                end
+              end
+
+              if _G.focus_if_open_elsewhere(target, item.pos) then
+                picker:close()
+                return
+              end
+
+              return confirm(picker, item, action)
             end
-          end
-
-          if _G.focus_if_open_elsewhere(target, item.pos) then
-            picker:close()
-            return
-          end
-
-          return confirm(picker, item, action)
-        end
-      '';
-    };
+          '';
+        };
+      };
   };
 }
