@@ -1,6 +1,6 @@
 <div align="center">
 
-# Vimmax
+# Nitovim
 <br>
 
 ## Screenshots
@@ -20,10 +20,6 @@
 |:-------:|:-------:|
 | <img src="./assets/yazi.png" width="350"> | <img src="./assets/snackspicker.png" width="350"> |
 | <img src="./assets/search-replace.png" width="350"> | <img src="./assets/git-blame.png" width="350"> |
-
-
-
-
 
 </div>
 
