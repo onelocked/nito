@@ -26,9 +26,9 @@
     "type": "github",
     "owner": "nixos",
     "repo": "nixpkgs",
-    "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
-    "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
-    "lastModified": 1792502884
+    "rev": "f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+    "narHash": "sha256-ziZn2PvCJE5JEEpqTdxXwJpPB+L3YqoCpTAMCzyaP3U=",
+    "lastModified": 1794042290
   },
   "nixvim": {
     "type": "github",
@@ -42,9 +42,13 @@
     "type": "github",
     "owner": "nickjvandyke",
     "repo": "opencode.nvim",
-    "rev": "e7643e9efc878876bb9c68da6cf30c45d6c34e5a",
-    "narHash": "sha256-WZ34IAqkAHins0ni6On3l8z8ziJ2nmarnWJrsWQJs/Q=",
-    "lastModified": 1792440727
+    "rev": "4851ae503585dc5142ad66a98e8952a74e1f7b3a",
+    "narHash": "sha256-Qhn8hGQ/S6SCV0GxsrS8nAPSq0ndwMNaEYhOw0Mv/Pc=",
+    "lastModified": 1793375285,
+    "archive": {
+      "hash": "sha256-PA2RjyubzvKIjjmLfEvD5Y69x1BMU2fgVQSv51sBYrk=",
+      "outHash": "sha256-ltUPhQ78D2tLwJ4aO5WjyCe7Pi8yaPqbLcg6VQNmLGA="
+    }
   },
   "systems": {
     "type": "github",
@@ -58,8 +62,8 @@
     "type": "github",
     "owner": "manic-systems",
     "repo": "tack",
-    "rev": "8573f1f1bda4aa467fa341b33f6004661833c022",
-    "narHash": "sha256-wwkmmsr5u8MknxrF9ZdIN90wk09weXCaVQp8aeWdYaE=",
-    "lastModified": 1792416927
+    "rev": "f59bc3e6679df14d402e40bf895cc2533bae4ca2",
+    "narHash": "sha256-ZK5sfTsvSo9VYEi8mAVtfu5FUFvMYoGMn6+CYzS1pPU=",
+    "lastModified": 1794242539
   }
 }
