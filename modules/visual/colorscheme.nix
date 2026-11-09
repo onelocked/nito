@@ -31,7 +31,7 @@
             sl_mode_v            = "${c.base11}",
             sl_mode_c            = "${c.base09}",
             sl_mode_t            = "${c.base14}",
-            comment              = "${c.base03}",
+            comment              = "${c.comment}",
             keyword              = "${c.base08}",
             string               = "${c.base0B}",
             fn                   = "${c.base12}",
@@ -333,6 +333,7 @@
             base01 = "#e0d8ce";
             base02 = "#C4B09E";
             base03 = "#8a8078";
+            comment = "#8a8078";
             # Foregrounds (Grey)
             base04 = "#4a4640";
             base05 = "#1c1a18";
@@ -367,6 +368,8 @@
             base01 = "#221c2c";
             base02 = "#313245";
             base03 = "#4D415F";
+
+            comment = "#737a92";
 
             # Foregrounds
             base04 = "#8c92aa";
@@ -403,6 +406,7 @@
             base01 = "#221c2c";
             base02 = "#2a2a2f";
             base03 = "#6a6a72";
+            comment = "#6a6a72";
 
             # Foregrounds
             base04 = "#8c92aa";
