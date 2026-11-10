@@ -41,7 +41,6 @@
       winminwidth = 5;
       fileencoding = "utf-8";
       list = true;
-      smoothscroll = true;
       autoread = true;
       fillchars = {
         eob = " ";
