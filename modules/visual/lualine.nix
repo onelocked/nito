@@ -2,32 +2,6 @@
   neovim.visual =
     { lib, ... }:
     let
-      filename_component = {
-        __unkeyed-1 =
-          lib.nixvim.mkRaw # lua
-            ''
-              function()
-                local name = vim.fn.expand("%:t")
-                if name == "" then
-                  return nil
-                end
-                local icon = ""
-                local ok, devicons = pcall(require, "nvim-web-devicons")
-                if ok then
-                  icon = devicons.get_icon(name, vim.bo.filetype, { default = true }) or ""
-                end
-                return icon ~= "" and (icon .. " " .. name) or name
-              end
-            '';
-        cond =
-          lib.nixvim.mkRaw # lua
-            ''
-              function()
-                return vim.fn.expand("%:t") ~= ""
-              end
-            '';
-      };
-
       diff_component = {
         __unkeyed-1 = "diff";
         symbols = {
@@ -90,7 +64,6 @@
             lualine_b = [
               "branch"
               "diagnostics"
-              filename_component
             ];
             lualine_c = [ diff_component ];
             lualine_x = [
@@ -104,8 +77,8 @@
 
           inactive_sections = {
             lualine_a = [ ];
-            lualine_b = [ filename_component ];
-            lualine_c = [ "filename" ];
+            lualine_b = [ ];
+            lualine_c = [ ];
             lualine_x = [ "location" ];
             lualine_y = [ ];
             lualine_z = [ ];

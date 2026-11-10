@@ -7,7 +7,7 @@
         settings = {
           options = {
             diagnostics = "nvim_lsp";
-            always_show_bufferline = false;
+            always_show_bufferline = true;
             themable = false;
           };
           highlights = {
