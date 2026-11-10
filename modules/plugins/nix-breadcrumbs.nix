@@ -14,6 +14,27 @@
               return field
             end
 
+            local function node_contains(node, row, col)
+              local start_row, start_col, end_row, end_col = node:range()
+              return (row > start_row or (row == start_row and col >= start_col))
+                and (row < end_row or (row == end_row and col <= end_col))
+            end
+
+            local function callee_name(node, buf)
+              while node do
+                local kind = node:type()
+                if kind == 'apply_expression' then
+                  node = first_field(node, 'function')
+                elseif kind == 'parenthesized_expression' then
+                  node = first_field(node, 'expression')
+                elseif kind == 'variable_expression' or kind == 'select_expression' then
+                  return vim.treesitter.get_node_text(node, buf)
+                else
+                  return nil
+                end
+              end
+            end
+
             local function nix_context(buf, row, col)
               local ok, parser = pcall(vim.treesitter.get_parser, buf, 'nix')
               if not ok then
@@ -26,10 +47,12 @@
               end
 
               local node = tree:root():named_descendant_for_range(row, col, row, col)
-              local parts = {}
+              local segments = {}
 
               while node do
-                if node:type() == 'binding' then
+                local kind = node:type()
+
+                if kind == 'binding' then
                   local attrpath = first_field(node, 'attrpath')
                   if attrpath then
                     local names = {}
@@ -39,8 +62,20 @@
                       end
                     end
 
-                    for i = #names, 1, -1 do
-                      table.insert(parts, 1, names[i])
+                    if #names > 0 then
+                      table.insert(segments, 1, {
+                        kind = 'attr',
+                        text = table.concat(names, '.'),
+                      })
+                    end
+                  end
+                elseif kind == 'apply_expression' then
+                  local arg = first_field(node, 'argument')
+                  if arg and node_contains(arg, row, col) then
+                    local fn = first_field(node, 'function')
+                    local name = fn and callee_name(fn, buf)
+                    if name then
+                      table.insert(segments, 1, { kind = 'call', text = name })
                     end
                   end
                 end
@@ -48,14 +83,25 @@
                 node = node:parent()
               end
 
-              if #parts == 0 then
+              if #segments == 0 then
                 return ""
               end
-              if #parts == 1 then
-                return parts[1]
+              if #segments == 1 then
+                return segments[1].text
               end
 
-              return table.concat(parts, '.', 1, #parts - 1) .. ' > ' .. parts[#parts]
+              local out = segments[1].text
+              for i = 2, #segments - 1 do
+                local previous = segments[i - 1]
+                local segment = segments[i]
+                if segment.kind == 'attr' and previous.kind == 'attr' then
+                  out = out .. '.' .. segment.text
+                else
+                  out = out .. ' > ' .. segment.text
+                end
+              end
+
+              return out .. ' > ' .. segments[#segments].text
             end
 
             local cache = { key = nil, value = "" }
