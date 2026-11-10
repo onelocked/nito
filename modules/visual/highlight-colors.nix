@@ -1,5 +1,5 @@
 {
-  neovim.mods = {
+  neovim.mods = { pkgs, ... }: {
     plugins.highlight-colors = {
       enable = true;
 
@@ -19,5 +19,18 @@
         virtual_symbol = "■";
       };
     };
+    extraPlugins = [ pkgs.vimPlugins.nvzone-minty ];
+    extraConfigLua = # lua
+      ''
+        require('minty').setup({
+          huefy = {
+            border = "single",
+            mappings = function(buf)
+              local api = require("minty.shades.api")
+              vim.keymap.set("n", "s", api.save_color, { buffer = buf })
+            end
+          }
+        })
+      '';
   };
 }
