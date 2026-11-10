@@ -27,7 +27,10 @@
             hover.enabled = false;
             message.enabled = false;
             signature.enabled = false;
-            progress.enabled = false;
+            progress = {
+              enabled = true;
+              view = "mini";
+            };
           };
         };
       };
