@@ -58,7 +58,7 @@
         }
         {
           mode = "n";
-          key = "<leader>s,";
+          key = "<leader>fb";
           action = "<cmd>:lua Snacks.picker.buffers({layout = 'vscode'})<cr>";
           options = {
             desc = "Buffers";
