@@ -12,7 +12,6 @@
           words.enabled = true;
           input.enabled = true;
           terminal.enabled = true;
-          scratch.enabled = false;
           image = {
             enabled = true;
             border = "single";
@@ -41,17 +40,6 @@
           action = "<cmd>:lua Snacks.gitbrowse()<cr>";
           options = {
             desc = "Git Browse";
-            silent = true;
-            noremap = true;
-          };
-        }
-
-        {
-          mode = "n";
-          key = "<leader>ss";
-          action = "<cmd>:lua Snacks.picker.smart()<cr>";
-          options = {
-            desc = "Smart";
             silent = true;
             noremap = true;
           };
