@@ -168,9 +168,10 @@
         actions = {
           focus_or_edit = mkRaw ''
             function(picker, item, action)
-              local confirm = require("snacks.picker.actions").confirm
               if not item or not (item.file or item._path) then
-                return confirm(picker, item, action)
+                -- Let picker-specific confirms handle non-file items
+                -- (e.g. the `select` source used for LSP code actions).
+                return picker:action("confirm")
               end
 
               local raw = item._path or item.file
@@ -201,7 +202,7 @@
                 return
               end
 
-              return confirm(picker, item, action)
+              return picker:action("confirm")
             end
           '';
         };
