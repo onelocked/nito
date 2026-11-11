@@ -9,6 +9,7 @@
           notify.enabled = false;
           views = {
             cmdline_popup = {
+              border.style = "single";
               position = {
                 row = -2;
                 col = "50%";
@@ -18,6 +19,9 @@
               row = -5;
               col = "50%";
             };
+            popupmenu.border.style = "single";
+            cmdline_input.border.style = "single";
+            confirm.border.style = "single";
           };
           lsp = {
             override = {
