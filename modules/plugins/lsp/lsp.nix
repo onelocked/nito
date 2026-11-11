@@ -65,6 +65,51 @@
       }
       {
         mode = "n";
+        key = "<leader>la";
+        action.__raw = ''
+          function()
+            local line = vim.api.nvim_win_get_cursor(0)[1]
+            vim.lsp.buf.code_action({
+              apply = true,
+              range = {
+                start = { line, 0 },
+                ["end"] = { line, #vim.api.nvim_get_current_line() },
+              },
+              filter = function(action)
+                return action.kind == "quickfix"
+              end,
+            })
+          end
+        '';
+        options = {
+          desc = "Fix diagnostic";
+          silent = true;
+          noremap = true;
+        };
+      }
+      {
+        mode = "n";
+        key = "<leader>lA";
+        action.__raw = ''
+          function()
+            local line = vim.api.nvim_win_get_cursor(0)[1]
+            vim.lsp.buf.code_action({
+              apply = true,
+              range = {
+                start = { line, 0 },
+                ["end"] = { line, #vim.api.nvim_get_current_line() },
+              },
+            })
+          end
+        '';
+        options = {
+          desc = "Code actions";
+          silent = true;
+          noremap = true;
+        };
+      }
+      {
+        mode = "n";
         key = "<leader>lD";
         action = "<cmd>:lua Snacks.picker.lsp_definitions()<cr>";
         options = {
