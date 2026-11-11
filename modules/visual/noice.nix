@@ -6,6 +6,7 @@
         lazyLoad.settings.event = "DeferredUIEnter";
         settings = {
           presets.bottom_search = true;
+          notify.enabled = false;
           views = {
             cmdline_popup = {
               position = {
@@ -28,7 +29,7 @@
             message.enabled = false;
             signature.enabled = false;
             progress = {
-              enabled = true;
+              enabled = false;
               view = "mini";
             };
           };
