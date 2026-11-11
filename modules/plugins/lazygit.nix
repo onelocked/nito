@@ -15,6 +15,16 @@
           keys = [ "<leader>gg" ];
         }
       ];
+      globals.lazygit_floating_window_border_chars = [
+        "┌"
+        "─"
+        "┐"
+        "│"
+        "┘"
+        "─"
+        "└"
+        "│"
+      ];
 
       keymaps = [
         {
