@@ -69,11 +69,6 @@
       extraLuaPackages = lp: with lp; [ luarocks ];
       extraConfigLua = # lua
         ''
-           -- windows
-          vim.o.winwidth = 10
-          vim.o.winminwidth = 10
-          vim.o.equalalways = false
-
            -- ssh
           if vim.env.SSH_CONNECTION or vim.env.SSH_CLIENT or vim.env.SSH_TTY then
             local osc52 = require("vim.ui.clipboard.osc52")
