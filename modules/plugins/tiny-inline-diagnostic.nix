@@ -1,6 +1,6 @@
 {
   neovim.mods =
-    { lib, mkRaw, ... }:
+    { mkRaw, ... }:
     {
       keymaps = [
         {
@@ -27,7 +27,7 @@
               enabled = true;
               always_show = true;
             };
-            format = lib.nixvim.mkRaw /* lua */ ''
+            format = mkRaw /* lua */ ''
               function(diagnostic)
                 local function prefix_diagnostic(prefix)
                   return string.format(prefix .. ' %s', diagnostic.message)

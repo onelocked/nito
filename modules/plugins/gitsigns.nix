@@ -1,39 +1,37 @@
 {
   neovim.mods =
-    { pkgs, mkRaw, ... }:
+    { mkRaw, ... }:
     {
-      extraPlugins = [ pkgs.vimPlugins.gitsigns-nvim ];
+      plugins.gitsigns = {
+        enable = true;
+        settings = {
+          current_line_blame = true;
+          current_line_blame_opts = {
+            delay = 300;
+            virt_text_pos = "eol";
+            ignore_whitespace = false;
+          };
+          current_line_blame_formatter = "<author>, <author_time:%R> • <summary>";
+          attach_to_untracked = true; # show signs in new files too
+          signs_staged_enable = true; # different signs for staged vs unstaged
 
-      extraConfigLua = # lua
-        ''
-          require('gitsigns').setup({
-            current_line_blame = true,
-            current_line_blame_opts = {
-              delay = 300,           -- default 1000ms feels sluggish
-              virt_text_pos = 'eol', -- or 'right_align'
-              ignore_whitespace = false,
-            },
-            current_line_blame_formatter = '<author>, <author_time:%R> • <summary>',
-            attach_to_untracked = true,  -- show signs in new files too
-            signs_staged_enable = true,  -- different signs for staged vs unstaged
-
-            word_diff = false,
-            signs = {
-              add = { text = '▏' },
-              change = { text = '▏' },
-              delete = { text = '▏' },
-              topdelete = { text = '󰐊' },
-              changedelete = { text = '▎' },
-            },
-            preview_config = {
-              border = 'single',
-              style = 'minimal',
-              relative = 'cursor',
-              row = 0,
-              col = 1
-            },
-          })
-        '';
+          word_diff = false;
+          signs = {
+            add.text = "▏";
+            change.text = "▏";
+            delete.text = "▏";
+            topdelete.text = "󰐊";
+            changedelete.text = "▎";
+          };
+          preview_config = {
+            border = "single";
+            style = "minimal";
+            relative = "cursor";
+            row = 0;
+            col = 1;
+          };
+        };
+      };
 
       keymaps = [
         {
