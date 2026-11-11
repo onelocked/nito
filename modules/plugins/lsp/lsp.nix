@@ -1,6 +1,5 @@
 {
   neovim.mods = {
-
     plugins = {
       trim = {
         enable = true;
@@ -24,10 +23,9 @@
         };
         keymaps = {
           silent = true;
-          diagnostic = {
-            "<leader>lj" = "goto_next";
-            "<leader>lk" = "goto_prev";
-          };
+          # Don't use `keymaps.diagnostic` here: nixvim still generates the
+          # deprecated `vim.diagnostic.goto_next()`/`goto_prev()` functions.
+          # Use `vim.diagnostic.jump()` explicitly instead.
         };
       };
     };
@@ -45,6 +43,26 @@
     };
 
     plugins.lsp.keymaps.extra = [
+      {
+        mode = "n";
+        key = "<leader>lj";
+        action = "<cmd>lua vim.diagnostic.jump({ count = 1, float = true })<cr>";
+        options = {
+          desc = "Next diagnostic";
+          silent = true;
+          noremap = true;
+        };
+      }
+      {
+        mode = "n";
+        key = "<leader>lk";
+        action = "<cmd>lua vim.diagnostic.jump({ count = -1, float = true })<cr>";
+        options = {
+          desc = "Previous diagnostic";
+          silent = true;
+          noremap = true;
+        };
+      }
       {
         mode = "n";
         key = "<leader>lD";
