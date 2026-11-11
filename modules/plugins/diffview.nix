@@ -11,10 +11,10 @@
     }:
     {
       extraPlugins = [
-        (pkgs.vimPlugins.diffview-plus-nvim.overrideAttrs (old: {
+        (pkgs.vimPlugins.diffview-plus-nvim.overrideAttrs {
           version = inputs._meta.diffview-plus.rev;
           src = inputs.diffview-plus;
-        }))
+        })
       ];
 
       extraConfigLua = # lua
@@ -92,15 +92,21 @@
               end,
             },
           })
-          -- make diffview close with regular :q
-          local function diffview_close_abbrev(lhs, replacement)
-            if vim.fn.getcmdtype() ~= ':' then return lhs end
-            if vim.trim(vim.fn.getcmdline()) ~= lhs then return lhs end
+          -- make diffview close with regular :q, :q!, :wq and :wq!
+          local function diffview_close_abbrev(cmd, replacement)
+            if vim.fn.getcmdtype() ~= ':' then return cmd end
+
+            local line = vim.trim(vim.fn.getcmdline())
+            local bang = line:sub(-1) == '!'
+            local base = bang and line:sub(1, -2) or line
+            if base ~= cmd then return cmd end
 
             local ok, lib = pcall(require, 'diffview.lib')
-            if not ok or not lib.get_current_view() then return lhs end
+            if not ok or not lib.get_current_view() then return cmd end
 
-            return replacement
+            -- Forward the bang so :q! / :wq! force-close past the
+            -- unsaved-stage-buffer guard introduced in diffview-plus.
+            return replacement .. (bang and "!" or "")
           end
 
           -- :wq needs to write the current buffer before closing, unlike :q.
@@ -113,7 +119,7 @@
             end
 
             local bufnr = vim.api.nvim_get_current_buf()
-            if vim.bo[bufnr].modified then
+            if vim.bo[bufnr].modified and vim.bo[bufnr].buftype ~= 'nofile' then
               vim.cmd(opts.bang and 'write!' or 'write')
             end
 
@@ -123,9 +129,12 @@
           function _G.__diffview_q_abbrev() return diffview_close_abbrev('q', 'DiffviewClose') end
           function _G.__diffview_wq_abbrev() return diffview_close_abbrev('wq', 'DiffviewWriteAndClose') end
 
+          -- blink.pairs maps `!`, so declare the bang forms explicitly.
           vim.cmd([[
-            cnoreabbrev <expr> q  v:lua.__diffview_q_abbrev()
-            cnoreabbrev <expr> wq v:lua.__diffview_wq_abbrev()
+            cnoreabbrev <expr> q!  v:lua.__diffview_q_abbrev()
+            cnoreabbrev <expr> q   v:lua.__diffview_q_abbrev()
+            cnoreabbrev <expr> wq! v:lua.__diffview_wq_abbrev()
+            cnoreabbrev <expr> wq  v:lua.__diffview_wq_abbrev()
           ]])
         '';
 
