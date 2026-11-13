@@ -63,7 +63,7 @@
         }
         {
           mode = "n";
-          key = "<leader>gl";
+          key = "<leader>gL";
           action = "<cmd>LazyGitFilterCurrentFile<cr>";
           options = {
             desc = "Lazygit Current File History";

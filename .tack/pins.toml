@@ -19,6 +19,10 @@ recomposable = true
 type = "fetch"
 url = "gh:dlyongemallo/diffview-plus.nvim/ba05af7a295dcd8449bd03ebb3aead8268a5c379"
 
+[inputs.gist-nvim]
+type = "fetch"
+url = "gh:rawnly/gist.nvim"
+
 [inputs.nixpkgs]
 url = "gh:nixos/nixpkgs/nixos-unstable"
 
